@@ -12,4 +12,4 @@
 class TestSampleUtils:
 
     def test_factory(self):
-        pass
+        assert 0 == 0
