@@ -1,6 +1,6 @@
 #
 # This file is part of Sample Database Utils.
-# Copyright (C) 2019 INPE.
+# Copyright (C) 2020-2021 INPE.
 #
 # Sample Database Utils is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -10,34 +10,36 @@
 
 import logging
 import os
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from osgeo import ogr, osr
+
 import pandas as pd
 from geoalchemy2 import shape
 from geopandas import GeoDataFrame
+from osgeo import ogr, osr
 from shapely.geometry import Point
 from shapely.wkt import loads as geom_from_wkt
 from werkzeug.datastructures import FileStorage
 
 from sample_db_utils.core.postgis_accessor import PostgisAccessor
-from sample_db_utils.core.utils import validate_mappings, unzip, is_stream, reproject
-
+from sample_db_utils.core.utils import (get_date_from_str, is_stream,
+                                        reproject, unzip, validate_mappings)
 
 
 class Driver(metaclass=ABCMeta):
-    """Generic interface for data reader"""
+    """Generic interface for data reader."""
+
     def __init__(self, storager, user=None, system=None):
-        """
+        """Init method.
+
         Args:
             storager (Storager) - Storager Strategy. See @postgis_acessor
             user (sample_db.models.User) - The user instance sample owner
             system (lccs_db.models.LucClassificationSystem)
-                The land use coverage classification system
+            The land use coverage classification system
         """
-
         if storager is None:
             storager = PostgisAccessor()
 
@@ -48,25 +50,26 @@ class Driver(metaclass=ABCMeta):
 
     @abstractmethod
     def load(self, file):
-        """Opens the file and load data"""
+        """Open the file and load data."""
 
     @abstractmethod
     def load_classes(self, file):
-        """Load sample classes in memory"""
+        """Load sample classes in memory."""
 
     @abstractmethod
     def get_files(self):
-        """Retrieves list of files to load"""
+        """Retrieve list of files to load."""
 
     def get_data_sets(self):
-        """Retrieves the loaded data sets
+        """Retrieve the loaded data sets.
+
         Returns:
             list of dict - Loaded data sets
         """
         return self._data_sets
 
     def load_data_sets(self):
-        """Load data sets in memory using database format"""
+        """Load data sets in memory using database format."""
         files = self.get_files()
 
         for f in files:
@@ -76,14 +79,13 @@ class Driver(metaclass=ABCMeta):
         return self
 
     def store(self, observation_table):
-        """
-        Store the observations into database using
-        Storager strategy
-        """
+        """Store the observations into database using Storager strategy."""
         self.storager.store_observations(self._data_sets, observation_table)
 
+
 class CSV(Driver):
-    """Defines a Base class for handle CSV data files
+    """Defines a Base class for handle CSV data files.
+
     Basically, a CSV is built with a mappings config.
     The config describes how to read the dataset in order to
     create a Brazil Data Cube sample. The `mappings`
@@ -92,13 +94,13 @@ class CSV(Driver):
     """
 
     def __init__(self, entries, mappings, storager=None, **kwargs):
-        """
+        """Init method.
+
         Args:
             entries (string|io.IOBase) - The file entries
             mappings (dict) - CSV Mappings to Sample
             storager (PostgisAccessor) -
         """
-
         copy_mappings = deepcopy(mappings)
 
         validate_mappings(copy_mappings)
@@ -109,8 +111,9 @@ class CSV(Driver):
         self.entries = entries
 
     def get_files(self):
+        """Get files."""
         if is_stream(self.entries) or \
-           os.path.isfile(self.entries):
+                os.path.isfile(self.entries):
             return [self.entries]
 
         files = os.listdir(self.entries)
@@ -120,13 +123,13 @@ class CSV(Driver):
         ]
 
     def build_data_set(self, csv):
-        """Build data set sample observation
+        """Build data set sample observation.
+
         Args:
             csv(pd.DataFrame) - Open CSV file
         Returns:
             GeoDataFrame CSV with geospatial location
         """
-
         geom_column = [
             Point(xy) for xy in zip(csv['longitude'], csv['latitude'])
         ]
@@ -143,13 +146,19 @@ class CSV(Driver):
         )
 
         start_date = self.mappings['start_date'].get('value') or \
-            geocsv[self.mappings['start_date']['key']]
+                     geocsv[self.mappings['start_date']['key']]
+
+        start_date = get_date_from_str(start_date)
 
         end_date = self.mappings['end_date'].get('value') or \
-            geocsv[self.mappings['end_date']['key']]
+                   geocsv[self.mappings['end_date']['key']]
 
-        collection_date = self.mappings['collection_date'].get('collection_date') or \
-                   geocsv[self.mappings['collection_date']['key']]
+        end_date = get_date_from_str(end_date)
+
+        collection_date = self.mappings['collection_date'].get('value') or \
+                          geocsv[self.mappings['collection_date']['key']]
+
+        collection_date = get_date_from_str(collection_date)
 
         geocsv['user_id'] = self.user
         geocsv['start_date'] = start_date
@@ -167,10 +176,11 @@ class CSV(Driver):
         return geocsv
 
     def get_unique_classes(self, csv):
-        """Retrieves distinct sample classes from CSV datasource"""
+        """Retrieve distinct sample classes from CSV datasource."""
         return csv[self.mappings['class_name']].unique()
 
     def load(self, file):
+        """Load file."""
         csv = pd.read_csv(file)
 
         self.load_classes(csv)
@@ -180,6 +190,7 @@ class CSV(Driver):
         self._data_sets.extend(res.T.to_dict().values())
 
     def load_classes(self, file):
+        """Load classes of a file."""
         self.storager.load()
 
         unique_classes = self.get_unique_classes(file)
@@ -197,7 +208,6 @@ class CSV(Driver):
                 "description": class_name,
                 "code": class_name,
                 "class_system_id": self.system.id,
-                # "user_id": self.user
             }
 
             samples_to_save.append(sample_class)
@@ -206,9 +216,12 @@ class CSV(Driver):
             self.storager.store_classes(samples_to_save)
             self.storager.load()
 
+
 class Shapefile(Driver):
-    """Base class for Shapefiles Reader"""
+    """Base class for Shapefiles Reader."""
+
     def __init__(self, entries, mappings, storager=None, **kwargs):
+        """Init method."""
         copy_mappings = deepcopy(mappings)
 
         validate_mappings(copy_mappings)
@@ -225,8 +238,7 @@ class Shapefile(Driver):
         self.crs = None
 
     def get_unique_classes(self, ogr_file, layer_name):
-        """Retrieves distinct sample classes from shapefile datasource"""
-
+        """Retrieve distinct sample classes from shapefile datasource."""
         classes = self.mappings.get('class_name')
 
         if isinstance(classes, str):
@@ -253,15 +265,15 @@ class Shapefile(Driver):
         return []
 
     def get_files(self):
+        """Get files."""
         if isinstance(self.entries, FileStorage) or \
-            self.entries.endswith('.zip'):
-
+                self.entries.endswith('.zip'):
             unzip(self.entries, self.temporary_folder.name)
 
             self.entries = self.temporary_folder.name
 
         if is_stream(self.entries) or \
-           (os.path.isfile(self.entries) and self.entries.endswith('.shp')):
+                (os.path.isfile(self.entries) and self.entries.endswith('.shp')):
             return [self.entries]
 
         files = os.listdir(self.entries)
@@ -271,7 +283,7 @@ class Shapefile(Driver):
         ]
 
     def build_data_set(self, feature, **kwargs):
-        """Build data set sample observation"""
+        """Build data set sample observation."""
         geometry = feature.GetGeometryRef()
 
         reproject(geometry, self.crs, 4326)
@@ -282,25 +294,29 @@ class Shapefile(Driver):
         ewkt = shape.from_shape(geom_shapely, srid=4326)
 
         start_date = self.mappings['start_date'].get('value') or \
-            feature.GetField(self.mappings['start_date']['key'])
+                     feature.GetField(self.mappings['start_date']['key'])
 
         end_date = self.mappings['end_date'].get('value') or \
-            feature.GetField(self.mappings['end_date']['key'])
+                   feature.GetField(self.mappings['end_date']['key'])
 
-        # TODO
-        collection_date = self.mappings['collection_date']
+        collection_date = self.mappings['collection_date'].get('value') or \
+                          feature.GetField(self.mappings['collection_date']['key'])
+
+        start_date = get_date_from_str(start_date)
+        end_date = get_date_from_str(end_date)
+        collection_date = get_date_from_str(collection_date)
 
         return {
             "start_date": start_date,
             "end_date": end_date,
             "collection_date": collection_date,
             "location": ewkt,
-            "class_id": self.storager.samples_map_id[feature.GetField(self.mappings['class_name'])] ,
+            "class_id": self.storager.samples_map_id[feature.GetField(self.mappings['class_name'])],
             "user_id": self.user
         }
 
     def load(self, file):
-
+        """Load datasource."""
         dataSource = ogr.Open(file)
 
         # Check to see if shapefile is found.
@@ -328,6 +344,7 @@ class Shapefile(Driver):
                     self._data_sets.append(dataset)
 
     def load_classes(self, file):
+        """Load classes of a file."""
         # Retrieves Layer Name from Data set filename
         layer_name = Path(file.GetName()).stem
         # Load Storager classes in memory
