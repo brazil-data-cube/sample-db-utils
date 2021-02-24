@@ -18,6 +18,8 @@ Documentation
 
    installation
    api
+   repository
+   history
    license
 
 

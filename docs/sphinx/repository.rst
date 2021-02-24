@@ -1,8 +1,8 @@
 ..
-    This file is part of Land Cover Classification System Web Service.
+    This file is part of Sample Database Utils.
     Copyright (C) 2020-2021 INPE.
 
-    Land Cover Classification System Web Service is free software; you can redistribute it and/or modify it
+    Sample Database Utils is free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
 
 
@@ -22,11 +22,9 @@ Following is an overview of the files and folders:
     +-----------------------------+------------------------------------------------------------------------------+
     | Name                        | Description                                                                  |
     +=============================+==============================================================================+
-    + ``lccs_ws``                 | Package source code.                                                         |
+    + ``sample_db_utils``         | Package source code.                                                         |
     +-----------------------------+------------------------------------------------------------------------------+
     + ``docs/sphinx``             | Sphinx based documentation folder.                                           |
-    +-----------------------------+------------------------------------------------------------------------------+
-    + ``docker``                  | Dockerfile.                                                                  |
     +-----------------------------+------------------------------------------------------------------------------+
     + ``tests``                   | Unit-tests based on PyTest.                                                  |
     +-----------------------------+------------------------------------------------------------------------------+
