@@ -12,6 +12,7 @@ import logging
 import os
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -26,6 +27,18 @@ from werkzeug.datastructures import FileStorage
 from sample_db_utils.core.postgis_accessor import PostgisAccessor
 from sample_db_utils.core.utils import (get_date_from_str, is_stream,
                                         reproject, unzip, validate_mappings)
+
+
+def get_date_from_str(date, date_ref=None):
+    """Build date from str."""
+    date = date.replace('/', '-')
+
+    try:
+        date = datetime.strptime(date, '%d-%m-%Y').strftime('%Y-%m-%d')
+    except:
+        return date
+
+    return date
 
 
 class Driver(metaclass=ABCMeta):
@@ -148,17 +161,11 @@ class CSV(Driver):
         start_date = self.mappings['start_date'].get('value') or \
                      geocsv[self.mappings['start_date']['key']]
 
-        start_date = get_date_from_str(start_date)
-
         end_date = self.mappings['end_date'].get('value') or \
                    geocsv[self.mappings['end_date']['key']]
 
-        end_date = get_date_from_str(end_date)
-
         collection_date = self.mappings['collection_date'].get('value') or \
                           geocsv[self.mappings['collection_date']['key']]
-
-        collection_date = get_date_from_str(collection_date)
 
         geocsv['user_id'] = self.user
         geocsv['start_date'] = start_date
@@ -299,19 +306,22 @@ class Shapefile(Driver):
         end_date = self.mappings['end_date'].get('value') or \
                    feature.GetField(self.mappings['end_date']['key'])
 
-        collection_date = self.mappings['collection_date'].get('value') or \
-                          feature.GetField(self.mappings['collection_date']['key'])
+        try:
+            collection_date = self.mappings['collection_date'].get('value') or \
+                         feature.GetField(self.mappings['collection_date']['key'])
+            collection_date = get_date_from_str(collection_date)
+        except:
+            collection_date = None
 
         start_date = get_date_from_str(start_date)
         end_date = get_date_from_str(end_date)
-        collection_date = get_date_from_str(collection_date)
 
         return {
             "start_date": start_date,
             "end_date": end_date,
             "collection_date": collection_date,
             "location": ewkt,
-            "class_id": self.storager.samples_map_id[feature.GetField(self.mappings['class_name'])],
+            "class_id": self.storager.samples_map_id[feature.GetField(self.mappings['class_name'])] ,
             "user_id": self.user
         }
 
@@ -358,6 +368,9 @@ class Shapefile(Driver):
             feature = unique_classes.GetFeature(feature_id)
             class_name = feature.GetField(0)
 
+            if class_name is None:
+                class_name = "None"
+
             # When class already registered, skips
             if class_name in self.storager.samples_map_id.keys():
                 continue
@@ -365,7 +378,7 @@ class Shapefile(Driver):
             sample_class = {
                 "name": class_name,
                 "description": class_name,
-                "code": class_name,
+                "code": class_name.upper(),
                 "class_system_id": self.system.id
             }
 

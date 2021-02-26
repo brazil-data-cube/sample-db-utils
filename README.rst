@@ -66,7 +66,7 @@ License
 
 
 .. admonition::
-    Copyright (C) 2020 INPE.
+    Copyright (C) 2020-2021 INPE.
 
     SAMPLE-DB is a free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
