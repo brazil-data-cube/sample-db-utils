@@ -51,7 +51,7 @@ install_requires = [
     'requests>=2.9.1',
     'shapely>=1.6',
     'GDAL>=2.2',
-    'lccs-db @ git+git://github.com/brazil-data-cube/lccs-db.git@b-0.2#egg=lccs_db',
+    'lccs-db @ git+https://github.com/brazil-data-cube/lccs-db.git@master',
 ]
 
 packages = find_packages()
