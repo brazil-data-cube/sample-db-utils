@@ -13,10 +13,11 @@ from lccs_db.models import LucClass, db
 class PostgisAccessor(object):
     """Postgis Acessor Class."""
 
-    def __init__(self):
+    def __init__(self, system_id=None):
         """Init method."""
         self.sample_classes = []
         self.samples_map_id = {}
+        self.classification_system_id = system_id
 
     def store_classes(self, classes):
         """Insert multiple sample classes on database.
@@ -32,6 +33,7 @@ class PostgisAccessor(object):
 
         Args:
             data_sets (dict[]): List of data sets observation to store
+            observation_table (table): Observation table to insert
         """
         db.engine.execute(
             observation_table.insert(),
@@ -41,7 +43,10 @@ class PostgisAccessor(object):
 
     def load(self):
         """Load sample classes in memory."""
-        self.sample_classes = LucClass.filter()
+        if self.classification_system_id:
+            self.sample_classes = LucClass.filter(class_system_id=self.classification_system_id)
+        else:
+            self.sample_classes = LucClass.filter()
         self.samples_map_id = {}
 
         for sample in self.sample_classes:
