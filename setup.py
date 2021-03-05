@@ -1,37 +1,36 @@
 #
 # This file is part of Sample Database Utils.
-# Copyright (C) 2019 INPE.
+# Copyright (C) 2020-2021 INPE.
 #
 # Sample Database Utils is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 #
 
-"""Sample Database Utils Setup"""
-
+"""Sample Database Utils."""
 
 import os
+
 from setuptools import find_packages, setup
 
 readme = open('README.rst').read()
 
-docs_require = [
-    'bdc-readthedocs-theme @ git+git://github.com/brazil-data-cube/bdc-readthedocs-theme.git#egg=bdc-readthedocs-theme',
-    'Sphinx>=2.1.2',
-]
+history = open('CHANGES.rst').read()
 
 tests_require = [
-    'pytest>=5.0.0,<6.0.0',
+    'coverage>=4.5',
+    'pytest>=5.2',
+    'pytest-cov>=2.8',
+    'pytest-pep8>=1.0',
+    'pydocstyle>=4.0',
+    'isort>4.3',
+    'check-manifest>=0.40',
+    'requests-mock>=1.7.0',
 ]
 
-install_requires = [
-    'geopandas>=0.5.0',
-    # 'gdal>=2.3.3,<3',
-    'SQLAlchemy[postgresql]>=1.3.4',
-    'GeoAlchemy2>=0.6.2',
-    'psycopg2>=2.8.3',
-    'requests>=2.9.1',
-    'shapely>=1.6',
-     'lccs-db @ git+git://github.com/brazil-data-cube/lccs-db.git#egg=lccs-db',
+docs_require = [
+    'Sphinx>=2.2',
+    'sphinx_rtd_theme',
+    'sphinx-copybutton',
 ]
 
 extras_require = {
@@ -39,8 +38,20 @@ extras_require = {
     'tests': tests_require,
 }
 
+extras_require['all'] = [req for exts, reqs in extras_require.items() for req in reqs]
+
 setup_requires = [
     'pytest-runner>=5.2',
+]
+
+install_requires = [
+    'geopandas>=0.5.0',
+    'SQLAlchemy[postgresql]>=1.3.4',
+    'GeoAlchemy2>=0.6.2',
+    'requests>=2.9.1',
+    'shapely>=1.6',
+    'GDAL>=2.2',
+    'lccs-db @ git+https://github.com/brazil-data-cube/lccs-db.git@master',
 ]
 
 packages = find_packages()
@@ -51,7 +62,6 @@ package_data = {
     'r-scripts': [r_data,
                   ],
 }
-
 
 
 with open(os.path.join('sample_db_utils', 'version.py'), 'rt') as fp:

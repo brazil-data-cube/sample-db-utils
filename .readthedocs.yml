@@ -1,4 +1,3 @@
-#
 # This file is part of Sample Database Utils.
 # Copyright (C) 2020-2021 INPE.
 #
@@ -6,10 +5,18 @@
 # under the terms of the MIT License; see LICENSE file for more details.
 #
 
-"""Version information for Sample Database Utils.
+version: 2
 
-This file is imported by ``sample_db_utils.__init__``,
-and parsed by ``setup.py``.
-"""
+sphinx:
+    configuration: docs/sphinx/conf.py
 
-__version__ = '0.2.0'
+formats: []
+
+python:
+    version: 3.7
+
+    install:
+        - method: pip
+          path: .
+          extra_requirements:
+              - docs

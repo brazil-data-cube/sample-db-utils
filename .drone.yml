@@ -1,0 +1,44 @@
+#
+# This file is part of Sample Database Utils.
+# Copyright (C) 2020-2021 INPE.
+#
+# Sample Database Utils is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
+kind: pipeline
+name: sample-db-utils
+
+steps:
+- name: build
+  image: python:3.7
+  commands:
+  - apt-get update
+  - apt-get install -y libgdal-dev
+  - pip install numpy
+  - pip install GDAL==$(gdal-config --version) --global-option=build_ext --global-option="$(gdal-config --cflags)"
+  - pip install --upgrade pip
+  - pip install --upgrade setuptools
+  - pip install -e .[tests,docs]
+  - ./run-tests.sh
+
+- name: coverage
+  image: plugins/codecov
+  settings:
+    files:
+    - coverage.xml
+    - .coverage
+    token:
+      from_secret: codecov_token
+  when:
+    event:
+    - push
+
+- name: discord-notify
+  image: brazildatacube/bdc-drone-discord
+  settings:
+    webhook:
+      from_secret: discord_webhook
+  when:
+    status:
+      - failure
+      - success

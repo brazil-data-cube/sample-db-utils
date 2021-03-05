@@ -1,37 +1,39 @@
 #
 # This file is part of Sample Database Utils.
-# Copyright (C) 2019 INPE.
+# Copyright (C) 2020-2021 INPE.
 #
 # Sample Database Utils is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 #
 
-""" InSitu Class."""
+"""InSitu Class."""
 
 import os
+
 from ..core.driver import CSV
 
+
 class InSitu(CSV):
-    """
-    Driver for InSitu Sample for data loading to `sampledb`
+    """Driver for InSitu Sample for data loading to `sampledb`.
+
     This class is an abstraction of repository
     https://github.com/e-sensing/inSitu.git
     **Make sure** you have `R` in PATH. You can download `R`
-    in https://cran.r-project.org/
+    in https://cran.r-project.org/.
     """
 
     def __init__(self, entries, storager, **kwargs):
+        """Init method."""
         mappings = {"name": "label"}
 
         super(InSitu, self).__init__(entries, mappings, storager, **kwargs)
 
     def load_data_sets(self):
-        """
-        Load data sets in memory using database format.
-        Calls `R` script to generate CSV sample data set. After that,
-        process the `CSV` files to the storager handler
-        """
+        """Load data sets in memory using database format.
 
+        Calls `R` script to generate CSV sample data set. After that,
+        process the `CSV` files to the storager handler.
+        """
         # Read data sets (.rda) from R to CSV
         InSitu.generate_data_sets(self.entries)
 
@@ -39,9 +41,10 @@ class InSitu(CSV):
 
     @classmethod
     def generate_data_sets(cls, entries):
-        """
-        Generates sample from inSitu package in R. It will generate `.csv` files
-        inside the provided in this object creation.
+        """Generate sample from inSitu package in R.
+
+        It will generate `.csv` files inside the provided in this object creation.
+
         Make sure you have R installed on PATH.
         This function tries to install inSitu dependencies with the
         following commands:
@@ -50,7 +53,7 @@ class InSitu(CSV):
         devtools::install_github("e-sensing/inSitu")
         install.packages("dplyr")
         ```
-        After that, execute R functions to load `.rda` files and export to CSV
+        After that, execute R functions to load `.rda` files and export to CSV.
         """
         import subprocess
         from pathlib import Path
