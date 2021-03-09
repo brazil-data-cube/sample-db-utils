@@ -293,7 +293,9 @@ class Shapefile(Driver):
         """Build data set sample observation."""
         geometry = feature.GetGeometryRef()
 
-        reproject(geometry, self.crs, 4326)
+        srs = geometry.GetSpatialReference()
+
+        reproject(geometry, self.crs, target_srid=4326)
 
         geom_shapely = geom_from_wkt(
             geometry.ExportToWkt())
@@ -308,7 +310,7 @@ class Shapefile(Driver):
 
         try:
             collection_date = self.mappings['collection_date'].get('value') or \
-                         feature.GetField(self.mappings['collection_date']['key'])
+                              feature.GetField(self.mappings['collection_date']['key'])
             collection_date = get_date_from_str(collection_date)
         except:
             collection_date = None
@@ -316,12 +318,14 @@ class Shapefile(Driver):
         start_date = get_date_from_str(start_date)
         end_date = get_date_from_str(end_date)
 
+        class_id = self.storager.samples_map_id[feature.GetField(self.mappings['class_name']).capitalize()]
+
         return {
             "start_date": start_date,
             "end_date": end_date,
             "collection_date": collection_date,
             "location": ewkt,
-            "class_id": self.storager.samples_map_id[feature.GetField(self.mappings['class_name'])] ,
+            "class_id": class_id,
             "user_id": self.user
         }
 
@@ -372,11 +376,11 @@ class Shapefile(Driver):
                 class_name = "None"
 
             # When class already registered, skips
-            if class_name in self.storager.samples_map_id.keys():
+            if class_name.capitalize() in self.storager.samples_map_id.keys():
                 continue
 
             sample_class = {
-                "name": class_name,
+                "name": class_name.capitalize(),
                 "description": class_name,
                 "code": class_name.upper(),
                 "class_system_id": self.system.id

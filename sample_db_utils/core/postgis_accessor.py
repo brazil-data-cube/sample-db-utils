@@ -50,4 +50,4 @@ class PostgisAccessor(object):
         self.samples_map_id = {}
 
         for sample in self.sample_classes:
-            self.samples_map_id[sample.name] = sample.id
+            self.samples_map_id[sample.name.capitalize()] = sample.id

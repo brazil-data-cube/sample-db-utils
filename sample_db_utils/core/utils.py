@@ -14,6 +14,7 @@ from tempfile import SpooledTemporaryFile
 from zipfile import ZipFile
 
 from osgeo import osr
+import osgeo
 from werkzeug.datastructures import FileStorage
 
 
@@ -84,6 +85,10 @@ def reproject(geom, source_srid, target_srid):
         target.ImportFromEPSG(target_srid)
     else:
         target.ImportFromProj4(target_srid)
+
+    if int(osgeo.__version__[0]) >= 3:
+        source.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+        target.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     transform = osr.CoordinateTransformation(source, target)
     geom.Transform(transform)
