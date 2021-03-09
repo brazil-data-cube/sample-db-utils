@@ -24,6 +24,7 @@ class PostgisAccessor(object):
 
         Args:
             classes (dict[]): list List of classes objects to save
+
         """
         db.session.bulk_insert_mappings(LucClass, classes)
         db.session.commit()
@@ -34,6 +35,7 @@ class PostgisAccessor(object):
         Args:
             data_sets (dict[]): List of data sets observation to store
             observation_table (table): Observation table to insert
+
         """
         db.engine.execute(
             observation_table.insert(),

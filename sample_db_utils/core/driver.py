@@ -48,10 +48,10 @@ class Driver(metaclass=ABCMeta):
         """Init method.
 
         Args:
-            storager (Storager) - Storager Strategy. See @postgis_acessor
+            storager (Storager) - Storager Strategy from sample-db-utils
             user (sample_db.models.User) - The user instance sample owner
-            system (lccs_db.models.LucClassificationSystem)
-            The land use coverage classification system
+            system (lccs_db.models.LucClassificationSystem) - The land use coverage classification system
+
         """
         if storager is None:
             storager = PostgisAccessor()
@@ -78,6 +78,7 @@ class Driver(metaclass=ABCMeta):
 
         Returns:
             list of dict - Loaded data sets
+
         """
         return self._data_sets
 
@@ -112,7 +113,8 @@ class CSV(Driver):
         Args:
             entries (string|io.IOBase) - The file entries
             mappings (dict) - CSV Mappings to Sample
-            storager (PostgisAccessor) -
+            storager (PostgisAccessor) - The PostgisAccessor from utils
+
         """
         copy_mappings = deepcopy(mappings)
 
@@ -140,8 +142,10 @@ class CSV(Driver):
 
         Args:
             csv(pd.DataFrame) - Open CSV file
+
         Returns:
             GeoDataFrame CSV with geospatial location
+
         """
         geom_column = [
             Point(xy) for xy in zip(csv['longitude'], csv['latitude'])
