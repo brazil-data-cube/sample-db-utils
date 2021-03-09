@@ -10,4 +10,4 @@ pydocstyle sample_db_utils setup.py && \
 isort sample_db_utils tests setup.py --check-only --diff && \
 check-manifest --ignore ".drone.yml,.readthedocs.yml" && \
 sphinx-build -qnW --color -b doctest docs/sphinx/ docs/sphinx/_build/doctest #&& \
-#pytest
+pytest
