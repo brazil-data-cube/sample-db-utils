@@ -55,9 +55,18 @@ Sample-DB (Sample Database) provides a data model that represents the land use a
 
 This package is related to other softwares in the Brazil Data Cube project. For more information on SAMPLE-DB-UTILS, see:
 
-- `LCCS-DB <https://github.com/brazil-data-cube/sample-db>`_: Land Cover Classification System Database Model.
 - `SAMPLE-DB <https://github.com/brazil-data-cube/sample-db>`_: Sample Database Model.
+
 - `SAMPLE.py <https://github.com/brazil-data-cube/sample.py>`_: Python client library over a WFS endpoint for retrieving samples.
+
+- `LCCS-DB <https://github.com/brazil-data-cube/lccs-db>`_: Land Cover Classification System Database Model.
+
+- `LCCS-WS-SPEC <https://github.com/brazil-data-cube/lccs-ws-spec>`_: Land Cover Classification System Web Service specification.
+
+- `LCCS-WS <https://github.com/brazil-data-cube/lccs-ws>`_: Land Cover Classification System Web Service implementation.
+
+- `LCCS.py <https://github.com/brazil-data-cube/lccs.py>`_: Python Client Library for Land Cover Classification System Web Service.
+
 
 Installation
 ============
