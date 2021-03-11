@@ -45,14 +45,19 @@ Utility Functions for the SAMPLE-DB
 About
 =====
 
-The land use and land cover samples are stored in a database to assist in the experiments of the Brazil Data Cube. **SAMPLE-DB** has the data model and functions to consult and store the land use and land cover samples. This repository, **SAMPLE-DB-UTILS**, has the utility functions that perform the transformation of different data formats to be stored by SAMPLE-DB.
-To facilitate access to samples of land use and land cover stored in the database, a Python package called **SAMPLE.py** was developed. This package retrieves the land use and land cover samples that were made available via WFS by the GeoServer application.
+Currently, several projects systematically provide information on the dynamics of land use and cover. Well known projects include PRODES, DETER and TerraClass. These projects are developed by INPE and they produce information on land use and coverage used by the Brazilian Government to make public policy decisions. Besides these projects there are other initiatives from universities and space agencies devoted to the creation of national and global maps.
 
-For more information on SAMPLE-DB-UTILS, see:
+These data products are generated using different approaches and methodologies. In this context, the data set used in the sample and validation plays a fundamental role in the classification algorithms that generate new land use and coverage maps. A classified map’s accuracy depends directly on the quality of the training samples used by the machine learning methods.
 
-- `lccs-db <https://github.com/brazil-data-cube/sample-db>`_: Land Cover Classification System Database Model.
-- `sample-db <https://github.com/brazil-data-cube/sample-db>`_: SQLAlchemy models and utility functions to query and store data.
-- `sample.py <https://github.com/brazil-data-cube/sample.py>`_: Python client library over a WFS endpoint for retrieving samples.
+Land use and cover samples are collected by different projects and individuals, using different methods, such as in situ gathering in fieldwork and visual interpretation of high-resolution satellite images. An important requirement is to be able to describe samples with proper metadata that characterize their differences and organize them in a shared database to facilitate the reproducibility of experiments. It is also important to develop tools to easily discover, query, access, and process this shared sample database.
+
+Sample-DB (Sample Database) provides a data model that represents the land use and cover samples collected by different projects and individuals. **SAMPLE-DB-UTILS**, has the utility functions that perform the transformation of different data formats to be stored by SAMPLE-DB.
+
+This package is related to other softwares in the Brazil Data Cube project. For more information on SAMPLE-DB-UTILS, see:
+
+- `LCCS-DB <https://github.com/brazil-data-cube/sample-db>`_: Land Cover Classification System Database Model.
+- `SAMPLE-DB <https://github.com/brazil-data-cube/sample-db>`_: Sample Database Model.
+- `SAMPLE.py <https://github.com/brazil-data-cube/sample.py>`_: Python client library over a WFS endpoint for retrieving samples.
 
 Installation
 ============
