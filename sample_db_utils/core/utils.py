@@ -13,6 +13,7 @@ from io import IOBase
 from tempfile import SpooledTemporaryFile
 from zipfile import ZipFile
 
+import osgeo
 from osgeo import osr
 from werkzeug.datastructures import FileStorage
 
@@ -30,8 +31,8 @@ def validate_mappings(mappings):
     - start_date: Start date field. Default is "start_date"
     - end_date: End date field. Default is "end_date"
     - collection_date: End date field. Default is "end_date"
-    """
 
+    """
     def set_default_value_for(key, object_reference):
         obj = dict()
 
@@ -70,6 +71,7 @@ def reproject(geom, source_srid, target_srid):
         geom (ogr.Geometry): Geometry
         source_srid (int): Input SRID
         target_srid (int): Target SRID
+
     """
     source = osr.SpatialReference()
 
@@ -85,6 +87,10 @@ def reproject(geom, source_srid, target_srid):
     else:
         target.ImportFromProj4(target_srid)
 
+    if int(osgeo.__version__[0]) >= 3:
+        source.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+        target.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
     transform = osr.CoordinateTransformation(source, target)
     geom.Transform(transform)
 
@@ -97,6 +103,7 @@ def unzip(stream, destination):
     Args:
         stream (str, io.Bytes) - File to extract
         destination (str) - Destination directory
+
     """
     if not os.path.exists(destination):
         os.makedirs(destination)

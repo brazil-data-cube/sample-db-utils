@@ -31,7 +31,8 @@ class DriverFactory:
 
         Args:
             driver_name (str): Content type of Driver.
-            driver (Driver): Driver Class handler
+            driver (Driver): Driver Class handler.
+
         """
         self.drivers[driver_name] = driver
 
