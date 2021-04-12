@@ -46,7 +46,6 @@ setup_requires = [
 
 install_requires = [
     'geopandas>=0.5.0',
-    'SQLAlchemy[postgresql]>=1.3.4',
     'GeoAlchemy2>=0.6.2',
     'requests>=2.9.1',
     'shapely>=1.6',
