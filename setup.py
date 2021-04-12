@@ -47,7 +47,6 @@ setup_requires = [
 install_requires = [
     'geopandas>=0.5.0',
     'GeoAlchemy2>=0.6.2',
-    'requests>=2.9.1',
     'shapely>=1.6',
     'GDAL>=2.2',
     'lccs-db @ git+https://github.com/brazil-data-cube/lccs-db.git@v0.6.0',

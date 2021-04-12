@@ -9,4 +9,21 @@
 Changes
 =======
 
-**Under Development!**
+Version 0.6.0 (2021-04-14)
+---------------------------
+
+- Drone integration (`#10 <https://github.com/brazil-data-cube/sample-db-utils/issues/10>`_).
+
+- Command Line Interface (CLI).
+
+- Documentation system based on Sphinx.
+
+- Documentation integrated to ``Read the Docs``.
+
+- Installation and build instructions.
+
+- Usage instructions.
+
+- Package support through Setuptools.
+
+- License: `MIT <https://github.com/gqueiroz/wtss.py/blob/master/LICENSE>`_.
