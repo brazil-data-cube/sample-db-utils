@@ -13,6 +13,16 @@ Installation
 
 Please, read the instructions below in order to install ``sample-db-utils``.
 
+
+Production installation
+-----------------------
+
+Install from `GitHub <https://github.com/brazil-data-cube/sample-db-utils>`_:
+
+.. code-block:: shell
+
+        $ pip3 install git+https://github.com/brazil-data-cube/sample-db-utils
+
 Development Installation
 ------------------------
 
