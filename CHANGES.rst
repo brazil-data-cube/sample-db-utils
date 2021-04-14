@@ -14,6 +14,14 @@ Version 0.6.0 (2021-04-14)
 
 - Drone integration (`#10 <https://github.com/brazil-data-cube/sample-db-utils/issues/10>`_).
 
+- Bug fix: Fix collect date in utils and drive (`#9 <https://github.com/brazil-data-cube/sample-db-utils/issues/9>`_).
+
+- Add classification system in PostgisAccessor (`#15 <https://github.com/brazil-data-cube/sample-db-utils/issues/15>`_).
+
+- Add string.capitalize for search classes (`#16 <https://github.com/brazil-data-cube/sample-db-utils/issues/16>`_).
+
+- Add a minimal test (`#18 <https://github.com/brazil-data-cube/sample-db-utils/issues/18>`_).
+
 - Command Line Interface (CLI).
 
 - Documentation system based on Sphinx.
