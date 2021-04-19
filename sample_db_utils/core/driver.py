@@ -92,9 +92,9 @@ class Driver(metaclass=ABCMeta):
 
         return self
 
-    def store(self, observation_table):
-        """Store the observations into database using Storager strategy."""
-        self.storager.store_observations(self._data_sets, observation_table)
+    def store(self, dataset_table):
+        """Store the data into database using Storager strategy."""
+        self.storager.store_data(self._data_sets, dataset_table)
 
 
 class CSV(Driver):
@@ -138,7 +138,7 @@ class CSV(Driver):
         ]
 
     def build_data_set(self, csv):
-        """Build data set sample observation.
+        """Build dataset sample data.
 
         Args:
             csv(pd.DataFrame) - Open CSV file
@@ -294,7 +294,7 @@ class Shapefile(Driver):
         ]
 
     def build_data_set(self, feature, **kwargs):
-        """Build data set sample observation."""
+        """Build dataset sample data."""
         geometry = feature.GetGeometryRef()
 
         srs = geometry.GetSpatialReference()

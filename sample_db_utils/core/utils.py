@@ -19,7 +19,7 @@ from werkzeug.datastructures import FileStorage
 
 
 def validate_mappings(mappings):
-    """Validate a class mappings of Observation.
+    """Validate a class mappings of dataset table.
 
     A mapping consists in a dictionary which maps the expected keys with
     provided keys in dataset.

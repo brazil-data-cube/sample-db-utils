@@ -29,16 +29,16 @@ class PostgisAccessor(object):
         db.session.bulk_insert_mappings(LucClass, classes)
         db.session.commit()
 
-    def store_observations(self, data_sets, observation_table):
-        """Store sample observation into database.
+    def store_data(self, data_sets, dataset_table):
+        """Store sample data into database.
 
         Args:
             data_sets (dict[]): List of data sets observation to store
-            observation_table (table): Observation table to insert
+            dataset_table (table): Dataset table to insert
 
         """
         db.engine.execute(
-            observation_table.insert(),
+            dataset_table.insert(),
             data_sets
         )
         db.session.commit()
