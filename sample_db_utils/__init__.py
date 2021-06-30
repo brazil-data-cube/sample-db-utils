@@ -9,7 +9,6 @@
 """Python Sample Database Utils."""
 
 from .core.driver import CSV, Shapefile
-from .core.postgis_accessor import PostgisAccessor
 from .drives.bdc import BDC
 from .drives.factory_driver import DriversFactory
 from .drives.hugo import Hugo
@@ -17,5 +16,5 @@ from .drives.hugo_tese import HugoTese
 from .drives.inSitu import InSitu
 from .version import __version__
 
-__all__ = ('__version__', 'InSitu', 'PostgisAccessor', 'DriversFactory', 'CSV', 'Shapefile',
+__all__ = ('__version__', 'InSitu', 'DriversFactory', 'CSV', 'Shapefile',
            'BDC', 'Hugo', 'HugoTese',)

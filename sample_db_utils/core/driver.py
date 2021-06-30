@@ -24,7 +24,6 @@ from shapely.geometry import Point
 from shapely.wkt import loads as geom_from_wkt
 from werkzeug.datastructures import FileStorage
 
-from sample_db_utils.core.postgis_accessor import PostgisAccessor
 from sample_db_utils.core.utils import (get_date_from_str, is_stream,
                                         reproject, unzip, validate_mappings)
 
@@ -53,9 +52,6 @@ class Driver(metaclass=ABCMeta):
             system (lccs_db.models.LucClassificationSystem) - The land use coverage classification system
 
         """
-        if storager is None:
-            storager = PostgisAccessor()
-
         self.storager = storager
         self.user = user
         self.system = system
