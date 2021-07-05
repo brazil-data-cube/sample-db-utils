@@ -18,9 +18,10 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 from geoalchemy2 import shape
-from geopandas import GeoDataFrame
+from geopandas import GeoDataFrame, GeoSeries
 from osgeo import ogr, osr
 from shapely.geometry import Point
+from shapely import wkt
 from shapely.wkt import loads as geom_from_wkt
 from werkzeug.datastructures import FileStorage
 
@@ -143,16 +144,25 @@ class CSV(Driver):
             GeoDataFrame CSV with geospatial location
 
         """
-        geom_column = [
-            Point(xy) for xy in zip(csv['longitude'], csv['latitude'])
-        ]
-        geocsv = GeoDataFrame(csv,
-                              crs=self.mappings.get('srid', 4326),
-                              geometry=geom_column)
 
-        geocsv['location'] = geocsv['geometry'].apply(
-            lambda point: ';'.join(['SRID=4326', point.wkt])
-        )
+        if 'longitude' in self.mappings and 'latitude' in self.mappings:
+            geom_column = [
+                Point(xy) for xy in zip(csv['longitude'], csv['latitude'])
+            ]
+            geocsv = GeoDataFrame(csv,
+                                  crs=self.mappings.get('srid', 4326),
+                                  geometry=geom_column)
+            geocsv['location'] = geocsv['geometry'].apply(
+                lambda point: ';'.join(['SRID=4326', point.wkt])
+            )
+            del geocsv['latitude']
+            del geocsv['longitude']
+
+        else:
+            geocsv_tmp = pd.read_csv(csv)
+            geocsv_tmp['location'] = GeoSeries.from_wkt(geocsv_tmp[self.mappings['geom']],
+                                                        crs=self.mappings.get('srid', 4326))
+            geocsv = GeoDataFrame(geocsv_tmp, crs=self.mappings.get('srid', 4326), geometry='location')
 
         geocsv['class_id'] = geocsv[self.mappings['class_name']].apply(
             lambda row: self.storager.samples_map_id[row]
@@ -165,16 +175,16 @@ class CSV(Driver):
                    geocsv[self.mappings['end_date']['key']]
 
         collection_date = self.mappings['collection_date'].get('value') or \
-                          geocsv[self.mappings['collection_date']['key']]
+                          geocsv[self.mappings['collection_date']['key']] or \
+                          None
+
+        if collection_date:
+            collection_date = get_date_from_str(collection_date)
 
         geocsv['user_id'] = self.user
         geocsv['start_date'] = start_date
         geocsv['end_date'] = end_date
         geocsv['collection_date'] = collection_date
-
-        del geocsv['geometry']
-        del geocsv['latitude']
-        del geocsv['longitude']
 
         # Delete id column to avoid DuplicateError on database
         if 'id' in geocsv.columns:
