@@ -54,8 +54,7 @@ def validate_mappings(mappings):
 
     if not mappings.get('geom'):
         if not mappings.get('latitude') and not mappings.get('longitude'):
-            mappings['latitude'] = 'latitude'
-            mappings['longitude'] = 'longitude'
+            mappings['geom'] = 'geometry'
 
     set_default_value_for('start_date', mappings)
     set_default_value_for('end_date', mappings)
