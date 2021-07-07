@@ -9,6 +9,11 @@
 Changes
 =======
 
+Version 0.6.1 (2021-07-07)
+---------------------------
+
+- Bug fix: Add geometry support in CSV driver (`#23 <https://github.com/brazil-data-cube/sample-db-utils/issues/23>`_).
+
 Version 0.6.0 (2021-04-22)
 ---------------------------
 
