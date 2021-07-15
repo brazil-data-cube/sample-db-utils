@@ -15,11 +15,12 @@ class DriverFactory:
 
     A driver consists in an implementation of sample_db_utils.core.driver.Driver.
     By default, we support both CSV and Shapefile samples.
-    These drivers are attached to theHTTP content type.
+    These drivers are attached to the HTTP content type.
     TODO: Read external drivers using entrypoints pkg_resources
     """
 
     drivers = {
+        'application/json': CSV,
         'text/csv': CSV,
         'application/vnd.ms-excel': CSV,
         'application/zip': Shapefile,

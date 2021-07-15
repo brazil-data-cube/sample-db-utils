@@ -49,8 +49,8 @@ def validate_mappings(mappings):
     if not mappings:
         raise TypeError('Invalid mappings')
 
-    if not mappings.get('class_name'):
-        mappings['class_name'] = 'label'
+    if not mappings.get('class_id'):
+        mappings['class_id'] = 'class_id'
 
     if not mappings.get('geom'):
         if not mappings.get('latitude') and not mappings.get('longitude'):

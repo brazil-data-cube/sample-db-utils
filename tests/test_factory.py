@@ -22,6 +22,14 @@ def test_factory():
     assert driver_klass.__name__ == "Shapefile"
 
 
+def test_factory_csv():
+    """Test factory get type."""
+    driver_klass = factory.get("application/json")
+
+    assert driver_klass.__class__.__name__ == "ABCMeta"
+    assert driver_klass.__name__ == "CSV"
+
+
 @pytest.mark.xfail(raises=TypeError)
 def test_drive_create_fail():
     """Test drive creator by factory type."""
@@ -35,7 +43,7 @@ def test_drive_create():
     """Test drive creator by factory type."""
     driver_klass = factory.get("application/zip")
 
-    mappings_str = '{"class_name":"cons_1985","start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
+    mappings_str = '{"class_id":"class_id","start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
     mappings = json.loads(mappings_str)
     driver: Driver = driver_klass(entries=None, mappings=mappings)
 

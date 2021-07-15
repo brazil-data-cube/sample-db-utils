@@ -9,11 +9,11 @@
 """Python Sample Database Utils."""
 
 from .core.driver import CSV, Shapefile
-from .drives.bdc import BDC
-from .drives.factory_driver import DriversFactory
-from .drives.hugo import Hugo
-from .drives.hugo_tese import HugoTese
-from .drives.inSitu import InSitu
+from .drivers.bdc import BDC
+from .drivers.factory_driver import DriversFactory
+from .drivers.hugo import Hugo
+from .drivers.hugo_tese import HugoTese
+from .drivers.inSitu import InSitu
 from .version import __version__
 
 __all__ = ('__version__', 'InSitu', 'DriversFactory', 'CSV', 'Shapefile',
