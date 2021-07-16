@@ -54,7 +54,7 @@ install_requires = [
 
 packages = find_packages()
 
-r_data = os.path.join('sample_db_utils', '/drives/r-scripts/*.R')
+r_data = os.path.join('sample_db_utils', '/drivers/r-scripts/*.R')
 
 package_data = {
     'r-scripts': [r_data,

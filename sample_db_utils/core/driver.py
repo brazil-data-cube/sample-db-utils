@@ -147,7 +147,7 @@ class CSV(Driver):
 
         if 'longitude' in self.mappings and 'latitude' in self.mappings:
             geom_column = [
-                Point(xy) for xy in zip(csv['longitude'], csv['latitude'])
+                Point(xy) for xy in zip(csv[self.mappings['longitude']], csv[self.mappings['longitude']])
             ]
             geocsv = GeoDataFrame(csv,
                                   crs=self.mappings.get('srid', 4326),
@@ -155,18 +155,17 @@ class CSV(Driver):
             geocsv['location'] = geocsv['geometry'].apply(
                 lambda point: ';'.join(['SRID=4326', point.wkt])
             )
-            del geocsv['latitude']
-            del geocsv['longitude']
+            if 'latitude' in geocsv:
+                del geocsv['latitude']
+            if 'longitude' in geocsv:
+                del geocsv['longitude']
 
         else:
-            geocsv_tmp = pd.read_csv(csv)
-            geocsv_tmp['location'] = GeoSeries.from_wkt(geocsv_tmp[self.mappings['geom']],
-                                                        crs=self.mappings.get('srid', 4326))
-            geocsv = GeoDataFrame(geocsv_tmp, crs=self.mappings.get('srid', 4326), geometry='location')
+            geom_column = GeoSeries.from_wkt(csv[self.mappings['geom']],
+                                             crs=self.mappings.get('srid', 4326))
+            geocsv = GeoDataFrame(csv, crs=self.mappings.get('srid', 4326), geometry=geom_column)
 
-        geocsv['class_id'] = geocsv[self.mappings['class_name']].apply(
-            lambda row: self.storager.samples_map_id[row]
-        )
+        geocsv['class_id'] = geocsv[self.mappings['class_id']]
 
         start_date = self.mappings['start_date'].get('value') or \
                      geocsv[self.mappings['start_date']['key']]
@@ -190,6 +189,9 @@ class CSV(Driver):
         if 'id' in geocsv.columns:
             del geocsv['id']
 
+        if 'geometry' in geocsv.columns:
+            del geocsv['geometry']
+
         return geocsv
 
     def get_unique_classes(self, csv):
@@ -198,9 +200,10 @@ class CSV(Driver):
 
     def load(self, file):
         """Load file."""
-        csv = pd.read_csv(file)
-
-        self.load_classes(csv)
+        if file.mimetype == 'application/json':
+            csv = pd.read_json(file)
+        else:
+            csv = pd.read_csv(file)
 
         res = self.build_data_set(csv)
 
@@ -328,7 +331,7 @@ class Shapefile(Driver):
         start_date = get_date_from_str(start_date)
         end_date = get_date_from_str(end_date)
 
-        class_id = self.storager.samples_map_id[feature.GetField(self.mappings['class_name']).capitalize()]
+        class_id = feature.GetField(self.mappings['class_id'])
 
         return {
             "start_date": start_date,
@@ -347,8 +350,6 @@ class Shapefile(Driver):
         if dataSource is None:
             raise Exception("Could not open {}".format(file))
         else:
-            self.load_classes(dataSource)
-
             for layer_id in range(dataSource.GetLayerCount()):
                 gdal_layer = dataSource.GetLayer(layer_id)
 

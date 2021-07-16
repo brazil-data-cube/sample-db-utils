@@ -23,11 +23,11 @@ def test_get_date_from_str():
 
 
 def test_validate_mappings():
-    mappings_str = '{"class_name":"cons_1985","start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
+    mappings_str = '{"class_id":"class_id", "start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
     validate_mappings(json.loads(mappings_str))
 
 
 @pytest.mark.xfail(raises=TypeError)
 def test_validate_mappings_fail():
-    mappings_str = '{"class":"cons_1985","start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
+    mappings_str = '{"class_id":"class_id", "start_date":{"value":"1985-01-01"},"end_date":{"value":"1985-12-31"}}'
     validate_mappings(json.loads(mappings_str))
