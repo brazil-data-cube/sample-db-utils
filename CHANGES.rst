@@ -9,6 +9,13 @@
 Changes
 =======
 
+Version 0.8.0 (2021-08-11)
+---------------------------
+
+- Add support to application/json  (`#28 <https://github.com/brazil-data-cube/sample-db-utils/issues/28>`_).
+
+- Change class_name in utils to class_id (`#27 <https://github.com/brazil-data-cube/sample-db-utils/issues/27>`_).
+
 Version 0.6.1 (2021-07-07)
 ---------------------------
 
