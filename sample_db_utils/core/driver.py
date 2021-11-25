@@ -28,6 +28,8 @@ from werkzeug.datastructures import FileStorage
 from sample_db_utils.core.utils import (get_date_from_str, is_stream,
                                         reproject, unzip, validate_mappings)
 
+from lccs_db.models import LucClass, LucClassificationSystem, db as _db
+
 
 def get_date_from_str(date, date_ref=None):
     """Build date from str."""
@@ -65,6 +67,18 @@ class Driver(metaclass=ABCMeta):
     @abstractmethod
     def load_classes(self, file):
         """Load sample classes in memory."""
+
+    def validate_classes(self, unique_classes):
+        """Validate if classes exist in classification system."""
+        classes = _db.session.query(LucClass.id).\
+            join(LucClassificationSystem, LucClass.classification_system_id == LucClassificationSystem.id)\
+            .filter(LucClassificationSystem.id == self.system.id).all()
+
+        not_exist = list(set(unique_classes) - set(classes) & set(unique_classes))
+
+        if len(not_exist) > 0:
+            raise RuntimeError(f"The classes: {', '.join([str(elem) for elem in not_exist])} "
+                               f"does not exist in the classification system!")
 
     @abstractmethod
     def get_files(self):
@@ -144,7 +158,6 @@ class CSV(Driver):
             GeoDataFrame CSV with geospatial location
 
         """
-
         if 'longitude' in self.mappings and 'latitude' in self.mappings:
             geom_column = [
                 Point(xy) for xy in zip(csv[self.mappings['longitude']], csv[self.mappings['longitude']])
@@ -205,36 +218,19 @@ class CSV(Driver):
         else:
             csv = pd.read_csv(file)
 
+        self.load_classes(csv)
+
         res = self.build_data_set(csv)
 
         self._data_sets.extend(res.T.to_dict().values())
 
     def load_classes(self, file):
         """Load classes of a file."""
-        self.storager.load()
-
         unique_classes = self.get_unique_classes(file)
 
-        samples_to_save = []
+        self.validate_classes(unique_classes)
 
-        stored_keys = self.storager.samples_map_id.keys()
-
-        for class_name in unique_classes:
-            if class_name in stored_keys:
-                continue
-
-            sample_class = {
-                "name": class_name,
-                "description": class_name,
-                "code": class_name,
-                "class_system_id": self.system.id,
-            }
-
-            samples_to_save.append(sample_class)
-
-        if samples_to_save:
-            self.storager.store_classes(samples_to_save)
-            self.storager.load()
+        return
 
 
 class Shapefile(Driver):
@@ -350,6 +346,8 @@ class Shapefile(Driver):
         if dataSource is None:
             raise Exception("Could not open {}".format(file))
         else:
+            self.load_classes(dataSource)
+
             for layer_id in range(dataSource.GetLayerCount()):
                 gdal_layer = dataSource.GetLayer(layer_id)
 
@@ -372,33 +370,9 @@ class Shapefile(Driver):
         """Load classes of a file."""
         # Retrieves Layer Name from Data set filename
         layer_name = Path(file.GetName()).stem
-        # Load Storager classes in memory
-        self.storager.load()
 
         unique_classes = self.get_unique_classes(file, layer_name)
 
-        samples_to_save = []
+        self.validate_classes(unique_classes)
 
-        for feature_id in range(unique_classes.GetFeatureCount()):
-            feature = unique_classes.GetFeature(feature_id)
-            class_name = feature.GetField(0)
-
-            if class_name is None:
-                class_name = "None"
-
-            # When class already registered, skips
-            if class_name.capitalize() in self.storager.samples_map_id.keys():
-                continue
-
-            sample_class = {
-                "name": class_name.capitalize(),
-                "description": class_name,
-                "code": class_name.upper(),
-                "class_system_id": self.system.id
-            }
-
-            samples_to_save.append(sample_class)
-
-        if samples_to_save:
-            self.storager.store_classes(samples_to_save)
-            self.storager.load()
+        return
