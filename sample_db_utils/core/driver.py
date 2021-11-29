@@ -115,7 +115,7 @@ class CSV(Driver):
     The config describes how to read the dataset in order to
     create a Brazil Data Cube sample. The `mappings`
     must include at least the required fields to fill
-    a sample, such latitude, longitude and class_name fields.
+    a sample, such latitude, longitude and class_id fields.
     """
 
     def __init__(self, entries, mappings, storager=None, **kwargs):
@@ -209,7 +209,7 @@ class CSV(Driver):
 
     def get_unique_classes(self, csv):
         """Retrieve distinct sample classes from CSV datasource."""
-        return csv[self.mappings['class_name']].unique()
+        return csv[self.mappings['class_id']].unique()
 
     def load(self, file):
         """Load file."""
@@ -247,7 +247,7 @@ class Shapefile(Driver):
         self.mappings = copy_mappings
         self.entries = entries
         self.temporary_folder = TemporaryDirectory()
-        self.class_name = None
+        self.class_id = None
         self.start_date = None
         self.end_date = None
         self.collection_date = None
@@ -255,10 +255,10 @@ class Shapefile(Driver):
 
     def get_unique_classes(self, ogr_file, layer_name):
         """Retrieve distinct sample classes from shapefile datasource."""
-        classes = self.mappings.get('class_name')
+        classes = self.mappings.get('class_id')
 
         if isinstance(classes, str):
-            classes = [self.mappings['class_name']]
+            classes = [self.mappings['class_id']]
 
         layer = ogr_file.GetLayer(layer_name)
 
@@ -273,7 +273,7 @@ class Shapefile(Driver):
 
         for possibly_class in classes:
             if possibly_class in fields:
-                self.class_name = possibly_class
+                self.class_id = possibly_class
 
                 return ogr_file.ExecuteSQL(
                     'SELECT DISTINCT "{}" FROM {}'.format(
