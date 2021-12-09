@@ -19,16 +19,16 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 from geoalchemy2 import shape
 from geopandas import GeoDataFrame, GeoSeries
+from lccs_db.models import LucClass, LucClassificationSystem
+from lccs_db.models import db as _db
 from osgeo import ogr, osr
-from shapely.geometry import Point
 from shapely import wkt
+from shapely.geometry import Point
 from shapely.wkt import loads as geom_from_wkt
 from werkzeug.datastructures import FileStorage
 
 from sample_db_utils.core.utils import (get_date_from_str, is_stream,
                                         reproject, unzip, validate_mappings)
-
-from lccs_db.models import LucClass, LucClassificationSystem, db as _db
 
 
 def get_date_from_str(date, date_ref=None):
