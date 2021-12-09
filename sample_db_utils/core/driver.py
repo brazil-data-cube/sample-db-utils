@@ -70,11 +70,20 @@ class Driver(metaclass=ABCMeta):
 
     def validate_classes(self, unique_classes):
         """Validate if classes exist in classification system."""
-        classes = _db.session.query(LucClass.id).\
-            join(LucClassificationSystem, LucClass.classification_system_id == LucClassificationSystem.id)\
-            .filter(LucClassificationSystem.id == self.system.id).all()
+        if self.system:
+            system_id = self.system.id
+        elif self.storager.classification_system_id is not None:
+            system_id = self.storager.classification_system_id
+        else:
+            raise RuntimeError("Missing Classification System ")
 
-        not_exist = list(set(unique_classes) - set(classes) & set(unique_classes))
+        classes = _db.session.query(LucClass.id). \
+            join(LucClassificationSystem, LucClass.classification_system_id == LucClassificationSystem.id) \
+            .filter(LucClassificationSystem.id == system_id).all()
+
+        classes_lists = [x[0] for x in classes]
+
+        not_exist = list(set(unique_classes) - set(classes_lists) & set(unique_classes))
 
         if len(not_exist) > 0:
             raise RuntimeError(f"The classes: {', '.join([str(elem) for elem in not_exist])} "
@@ -258,27 +267,23 @@ class Shapefile(Driver):
         classes = self.mappings.get('class_id')
 
         if isinstance(classes, str):
-            classes = [self.mappings['class_id']]
+            classes = self.mappings['class_id']
+
+        else:
+            return classes['value']
 
         layer = ogr_file.GetLayer(layer_name)
 
         if layer.GetFeatureCount() == 0:
             return []
 
-        f = layer.GetFeature(0)
+        unique_c = ogr_file.ExecuteSQL(f'SELECT DISTINCT {classes} FROM {layer_name}')
 
-        fields = [
-            f.GetFieldDefnRef(i).GetName() for i in range(f.GetFieldCount())
-        ]
+        result = []
+        for i, feature in enumerate(unique_c):
+            result.append(feature.GetField(0))
 
-        for possibly_class in classes:
-            if possibly_class in fields:
-                self.class_id = possibly_class
-
-                return ogr_file.ExecuteSQL(
-                    'SELECT DISTINCT "{}" FROM {}'.format(
-                        possibly_class, layer_name))
-        return []
+        return result
 
     def get_files(self):
         """Get files."""
