@@ -49,7 +49,7 @@ install_requires = [
     'GeoAlchemy2>=0.6.2',
     'shapely>=1.6',
     'GDAL>=2.2',
-    'lccs-db @ git+https://github.com/brazil-data-cube/lccs-db.git@v0.6.0',
+    'lccs-db @ git+https://github.com/brazil-data-cube/lccs-db.git@master',
 ]
 
 packages = find_packages()

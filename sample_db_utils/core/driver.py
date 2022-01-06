@@ -19,9 +19,11 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 from geoalchemy2 import shape
 from geopandas import GeoDataFrame, GeoSeries
+from lccs_db.models import LucClass, LucClassificationSystem
+from lccs_db.models import db as _db
 from osgeo import ogr, osr
-from shapely.geometry import Point
 from shapely import wkt
+from shapely.geometry import Point
 from shapely.wkt import loads as geom_from_wkt
 from werkzeug.datastructures import FileStorage
 
@@ -66,6 +68,27 @@ class Driver(metaclass=ABCMeta):
     def load_classes(self, file):
         """Load sample classes in memory."""
 
+    def validate_classes(self, unique_classes):
+        """Validate if classes exist in classification system."""
+        if self.system:
+            system_id = self.system.id
+        elif self.storager.classification_system_id is not None:
+            system_id = self.storager.classification_system_id
+        else:
+            raise RuntimeError("Missing Classification System ")
+
+        classes = _db.session.query(LucClass.id). \
+            join(LucClassificationSystem, LucClass.classification_system_id == LucClassificationSystem.id) \
+            .filter(LucClassificationSystem.id == system_id).all()
+
+        classes_lists = [x[0] for x in classes]
+
+        not_exist = list(set(unique_classes) - set(classes_lists) & set(unique_classes))
+
+        if len(not_exist) > 0:
+            raise RuntimeError(f"The classes: {', '.join([str(elem) for elem in not_exist])} "
+                               f"does not exist in the classification system!")
+
     @abstractmethod
     def get_files(self):
         """Retrieve list of files to load."""
@@ -101,7 +124,7 @@ class CSV(Driver):
     The config describes how to read the dataset in order to
     create a Brazil Data Cube sample. The `mappings`
     must include at least the required fields to fill
-    a sample, such latitude, longitude and class_name fields.
+    a sample, such latitude, longitude and class_id fields.
     """
 
     def __init__(self, entries, mappings, storager=None, **kwargs):
@@ -144,7 +167,6 @@ class CSV(Driver):
             GeoDataFrame CSV with geospatial location
 
         """
-
         if 'longitude' in self.mappings and 'latitude' in self.mappings:
             geom_column = [
                 Point(xy) for xy in zip(csv[self.mappings['longitude']], csv[self.mappings['longitude']])
@@ -196,7 +218,7 @@ class CSV(Driver):
 
     def get_unique_classes(self, csv):
         """Retrieve distinct sample classes from CSV datasource."""
-        return csv[self.mappings['class_name']].unique()
+        return csv[self.mappings['class_id']].unique()
 
     def load(self, file):
         """Load file."""
@@ -205,36 +227,19 @@ class CSV(Driver):
         else:
             csv = pd.read_csv(file)
 
+        self.load_classes(csv)
+
         res = self.build_data_set(csv)
 
         self._data_sets.extend(res.T.to_dict().values())
 
     def load_classes(self, file):
         """Load classes of a file."""
-        self.storager.load()
-
         unique_classes = self.get_unique_classes(file)
 
-        samples_to_save = []
+        self.validate_classes(unique_classes)
 
-        stored_keys = self.storager.samples_map_id.keys()
-
-        for class_name in unique_classes:
-            if class_name in stored_keys:
-                continue
-
-            sample_class = {
-                "name": class_name,
-                "description": class_name,
-                "code": class_name,
-                "class_system_id": self.system.id,
-            }
-
-            samples_to_save.append(sample_class)
-
-        if samples_to_save:
-            self.storager.store_classes(samples_to_save)
-            self.storager.load()
+        return
 
 
 class Shapefile(Driver):
@@ -251,7 +256,7 @@ class Shapefile(Driver):
         self.mappings = copy_mappings
         self.entries = entries
         self.temporary_folder = TemporaryDirectory()
-        self.class_name = None
+        self.class_id = None
         self.start_date = None
         self.end_date = None
         self.collection_date = None
@@ -259,30 +264,26 @@ class Shapefile(Driver):
 
     def get_unique_classes(self, ogr_file, layer_name):
         """Retrieve distinct sample classes from shapefile datasource."""
-        classes = self.mappings.get('class_name')
+        classes = self.mappings.get('class_id')
 
         if isinstance(classes, str):
-            classes = [self.mappings['class_name']]
+            classes = self.mappings['class_id']
+
+        else:
+            return classes['value']
 
         layer = ogr_file.GetLayer(layer_name)
 
         if layer.GetFeatureCount() == 0:
             return []
 
-        f = layer.GetFeature(0)
+        unique_c = ogr_file.ExecuteSQL(f'SELECT DISTINCT {classes} FROM {layer_name}')
 
-        fields = [
-            f.GetFieldDefnRef(i).GetName() for i in range(f.GetFieldCount())
-        ]
+        result = []
+        for i, feature in enumerate(unique_c):
+            result.append(feature.GetField(0))
 
-        for possibly_class in classes:
-            if possibly_class in fields:
-                self.class_name = possibly_class
-
-                return ogr_file.ExecuteSQL(
-                    'SELECT DISTINCT "{}" FROM {}'.format(
-                        possibly_class, layer_name))
-        return []
+        return result
 
     def get_files(self):
         """Get files."""
@@ -350,6 +351,8 @@ class Shapefile(Driver):
         if dataSource is None:
             raise Exception("Could not open {}".format(file))
         else:
+            self.load_classes(dataSource)
+
             for layer_id in range(dataSource.GetLayerCount()):
                 gdal_layer = dataSource.GetLayer(layer_id)
 
@@ -372,33 +375,9 @@ class Shapefile(Driver):
         """Load classes of a file."""
         # Retrieves Layer Name from Data set filename
         layer_name = Path(file.GetName()).stem
-        # Load Storager classes in memory
-        self.storager.load()
 
         unique_classes = self.get_unique_classes(file, layer_name)
 
-        samples_to_save = []
+        self.validate_classes(unique_classes)
 
-        for feature_id in range(unique_classes.GetFeatureCount()):
-            feature = unique_classes.GetFeature(feature_id)
-            class_name = feature.GetField(0)
-
-            if class_name is None:
-                class_name = "None"
-
-            # When class already registered, skips
-            if class_name.capitalize() in self.storager.samples_map_id.keys():
-                continue
-
-            sample_class = {
-                "name": class_name.capitalize(),
-                "description": class_name,
-                "code": class_name.upper(),
-                "class_system_id": self.system.id
-            }
-
-            samples_to_save.append(sample_class)
-
-        if samples_to_save:
-            self.storager.store_classes(samples_to_save)
-            self.storager.load()
+        return
