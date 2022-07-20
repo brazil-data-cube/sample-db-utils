@@ -9,6 +9,18 @@
 Changes
 =======
 
+Version 0.9.0 (2022-07-20)
+---------------------------
+
+- Add support to lccs-db 0.8.1  (`#33 <https://github.com/brazil-data-cube/sample-db-utils/issues/33>`_).
+
+- Fix docs build (`#34 <https://github.com/brazil-data-cube/sample-db-utils/issues/34>`_).
+
+- Add validade classes.
+
+- Fix the get id function for classification system.
+
+
 Version 0.8.0 (2021-08-11)
 ---------------------------
 
