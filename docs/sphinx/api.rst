@@ -15,5 +15,4 @@ SAMPLE-DB-UTILS API
 
     driver
     factory
-    postgis_accessor
     utils
