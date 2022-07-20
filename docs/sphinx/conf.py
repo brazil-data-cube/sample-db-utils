@@ -1,6 +1,6 @@
 #
 # This file is part of Sample Database Utils.
-# Copyright (C) 2020 INPE.
+# Copyright (C) 2022 INPE.
 #
 # Sample Database Utils is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
@@ -13,7 +13,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'Sample-DB-Utils'
-copyright = '2020-2021, INPE.'
+copyright = '2020-2022, INPE.'
 author = 'Brazil Data Cube Team'
 release = sample_db_utils.__version__
 
