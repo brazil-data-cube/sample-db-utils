@@ -9,7 +9,7 @@
 Changes
 =======
 
-Version 0.9.0 (2022-07-20)
+Version 0.9.0 (2022-08-03)
 ---------------------------
 
 - Add support to lccs-db 0.8.1  (`#33 <https://github.com/brazil-data-cube/sample-db-utils/issues/33>`_).
